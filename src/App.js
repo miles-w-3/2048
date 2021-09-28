@@ -1,6 +1,5 @@
 import './App.css';
 import React from 'react';
-import update from 'react-addons-update';
 
 // TODO: Add event listener for arrow keys
 class Tile extends React.Component {
@@ -30,6 +29,13 @@ class Board extends React.Component {
     }
 
     // componentDidMount, put keylistener in there
+    useEffect(() => {
+        document.addEventListener('keypress', (e) => {
+            if (e.code == "ArrowUp") {
+                this.shiftUp();
+            }
+        })
+    }); 
 
     // spawn a new tile on an empty space in the board
     fillNewTile() {
