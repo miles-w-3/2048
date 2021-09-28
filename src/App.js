@@ -23,6 +23,7 @@ class Board extends React.Component {
             // keep track of tile values in each location
             tiles: Array(16).fill(0)
         }
+
         // fill two starter tiles
         this.fillNewTile();
         this.fillNewTile();
@@ -82,8 +83,9 @@ class Board extends React.Component {
         )
     }
 
+    /*
     // listen for arrow keys
-    handleKeyDown(e) {
+    onKeyPress(key) {
         // left arrow
         if (e.keyCode() === 37) {
 
@@ -99,8 +101,7 @@ class Board extends React.Component {
         // down arrow
         else if (e.keyCode() === 40) {
 
-        }
-    }
+      }*/
 }
 
 
