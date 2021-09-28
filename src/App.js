@@ -29,6 +29,8 @@ class Board extends React.Component {
         this.fillNewTile();
     }
 
+    // componentDidMount, put keylistener in there
+
     // spawn a new tile on an empty space in the board
     fillNewTile() {
         let open = []; // track all open slots, one will be filled with a new tile
@@ -81,6 +83,31 @@ class Board extends React.Component {
                 value={this.state.tiles[i]}
             />
         )
+    }
+
+    shiftUp() {
+        // TODO: need a list of indexes that have already merged this cycle so that double merges don't happen as you go up
+        let merged = Set()
+        // continually shift tiles up to the top if there is an empty space within the board 
+        for (let i = 15; i >=0; i--) {
+            // if there is a tile at the current place and there is a valid space above
+            if (this.state.tiles[i] && i-4 >= 0) {
+                // move into empty space
+                if (this.state.tiles[i-4] === 0) {
+                    // swap tile locations
+                    this.state.tiles[i-4] = this.state.tiles[i] 
+                    this.state.tiles[i] = 0; 
+                }
+                // otherwise, if the value of the tiles is equal, merge them TODO: Only merge if they have not been merged this time
+                else if (this.state.tiles[i] === this.state.tiles[i-4]) {
+                    // merge tile values 
+                    this.state.tiles[i-4] += this.state.tiles[i] 
+                    this.state.tiles[i] = 0; 
+                }
+            }
+        }
+        // spawn a new tile now that the shift is done
+        this.fillNewTile(); // TODO: does this get moved into the event listener?
     }
 
     /*
