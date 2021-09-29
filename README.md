@@ -1,16 +1,20 @@
 ## Current progress
 * Initialized Tile and board classes
-* Tiles are currently buttons with 
-* Created function to randomly add tile, will be used at program start and throughout the program after each move
+* Tiles are currently just html buttons for simplicity
+* KeyListener and starting tiles are now initialized
+* Moving with up arrows now does simple shift up, need to manage merges and add functionality with other arrow keys
 
-## Next goals
-* Add in arrow key movement detection
-  * Then add logic for combining tiles - implement one case then abstract (could start with just moving all tiles in one direction, start with the opposite direction and move over square by square) 
+## Goals
 * Transition tile buttons into fully-functioning objects with set size, text content, and color
-* Eventually, add score
+    * Hopefully can get them to animate as the
 * Add 2048 win detection
+* Also add loss detection, maybe when you try to fill a new tile and no open tile can be found
+* Eventually, add score
+* If the scope of this project expands, potentially add a database of user scores, 
+users can log in (maybe with just a username) and raise their score
+    * Users would create an account if they want their score saved in the first place
 
-# Getting Started with Create React App
+
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
