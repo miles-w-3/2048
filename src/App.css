@@ -2,6 +2,30 @@
   text-align: center;
 }
 
+/* descriptions for a single tile */
+.square {
+    display: inline-block;
+  height: 50px;
+  width: 50px;
+  background-color: #CFCBBB;
+  border-width: 2px;
+  border-color: #282c34;
+  line-height: 50px;
+  text-align: center;
+}
+
+/* descriptions for a row on the board*/
+.board-row::after {
+  height: 50px;
+  width: 200px;
+  display: table;
+}
+
+.game-board {
+  width: 200px;
+  height: 200px;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

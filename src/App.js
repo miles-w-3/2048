@@ -1,26 +1,27 @@
 import './App.css';
 import React from 'react';
 
-// TODO: Add event listener for arrow keys
-class Tile extends React.Component {
-    render() {
-        // return a square tile
-        return (
-            // TODO: Eventually the buttons will instead be rounded squares with different colors, could potentially use a div style
-            <button>
-                {this.props.value}
-            </button>
-        )
-    }
+function Tile(props) {
+    // return a square tile
+    return (
+        <div className="square" style={{backgroundColor: props.color}}>
+            <span>{props.value}</span>
+        </div>
+    )
+
 }
 
 class Board extends React.Component {
     // initialize tiles array within state
     constructor(props) {
         super(props);
+        // set color map for tiles
+        this.colorMap = new Map([[0, "#595959"], [2, "#DCDCDC"], [4, "#FAFAD2"], [8, "#FFD700"],
+            [16, "#FFA500"], [32, "#FF6347"]])
         this.state = {
             // keep track of tile values in each location
-            tiles: Array(16).fill(0)
+            tiles: Array(16).fill(0),
+
         }
     }
 
@@ -28,24 +29,26 @@ class Board extends React.Component {
         // set key listener for arrowkeys
         document.addEventListener('keyup', e => this.onKeyPress(e), true);
 
+
+
         // fill two starter tiles
         const newTiles = this.state.tiles.slice();
         this.fillNewTile(newTiles);
         this.fillNewTile(newTiles);
-        console.count("New tiles array is " + newTiles)
         this.setState({tiles: newTiles});
+
+
     }
 
     // spawn a new tile on an empty space in the given tile array
     fillNewTile(tiles_array) {
-        // TODO: Could trigger game loss if length of open is zero, meaning all spaces are currently filled
+        // TODO: Could trigger game loss if length of open is zero, meaning all spaces are currently filled, probably not since fillNewTile won't be called in current state
         let open = []; // track all open slots, one will be filled with a new tile
         for (let i = 0; i < tiles_array.length; i++) {
             if (tiles_array[i] === 0) {
                 open.push(i);
             }
         }
-        console.count("Open array is " + open)
         // choose open index to make new tile in
         let openIndex = Math.floor(Math.random() * open.length);
         // get the corresponding index on the full board
@@ -81,47 +84,92 @@ class Board extends React.Component {
         );
     }
 
+
     // render the tile with value from the given location
     renderTile(i) {
-        // TODO: create a dict of values to colors, pass in color as well
+        let currentVal = this.state.tiles[i];
         return (
+            // send value and color, support default color of black for unmapped values
             <Tile
-                value={this.state.tiles[i]}
+                value={currentVal}
+                color={this.colorMap.has(currentVal) ? this.colorMap.get(currentVal) : "#000000"}
             />
         )
     }
 
-    shiftUp() {
-        // TODO: need a list of indexes that have already merged this cycle so that double merges don't happen as you go up
-        let tiles_new = this.state.tiles.slice();
-        //let merged = Set()
-        // continually shift tiles up to the top if there is an empty space within the board
-        for (let i = 15; i >= 0; i--) {
-            // if there is a tile at the current place and there is a valid space above
-            if (tiles_new[i] && i - 4 >= 0) {
-                // move into empty space
-                if (tiles_new[i - 4] === 0) {
-                    // swap tile locations
-                    tiles_new[i - 4] = tiles_new[i]
-                    tiles_new[i] = 0;
+    // execute shift, loop from start to end, inclusive, ang give increment direction
+    shiftManager(shiftType) {
+        console.count("In shift manager")
+        // a list of indexes that have already merged this cycle so that double merges don't occur
+        let movementOccurred = false;
+        let newTiles = this.state.tiles.slice();
+        let merged = new Set();
+        // execute the given shift type, check if movement occurred
+        movementOccurred = shiftType(newTiles, merged); // TODO: tiles need to be shifted in the opposite direction, so that all stacked tiles
+        // TODO: Could basically loop through in the same order as now, but see if there is a tile to be "pulled in" to the current space rather
+        // Than trying to merge into the current space
+
+        // Add new til and update state if shift occurs
+        if (movementOccurred) {
+            this.fillNewTile(newTiles)
+            // spawn a new tile now that the shift is done
+            this.setState({tiles: newTiles});
+        }
+    }
+
+    // execute the shift in the tiles list if it is valid, return true if movement occurred
+    shiftCheck(tiles_list, merged, idx, shiftIdx) {
+        // track the index being assessed for shift
+        if (tiles_list[idx] && shiftIdx >= 0 && shiftIdx <= 15) {
+            // move into empty space
+            if (tiles_list[shiftIdx] === 0) {
+                // move tile
+                tiles_list[shiftIdx] = tiles_list[idx]
+                tiles_list[idx] = 0;
+                // if this tile has been merged previously, make sure to keep track at the new index
+                if (merged.has(idx)) {
+                    merged.delete(idx);
+                    merged.add(shiftIdx);
                 }
-                // otherwise, if the value of the tiles is equal, merge them TODO: Only merge if they have not been merged this time
-                else if (tiles_new[i] === tiles_new[i - 4]) {
-                    // merge tile values 
-                    tiles_new[i - 4] += tiles_new[i]
-                    tiles_new[i] = 0; // old location set to zero
-                }
-                // TODO: Experimental: updating state after each move to see if it animates (prolly wont)
-                console.count("tiles is now: " + tiles_new)
-                //this.setState({tiles: tiles_new});
+                return true;
+            }
+            // otherwise, if the value of the tiles is equal, make sure they haven't been merged during this shift
+            else if (tiles_list[idx] === tiles_list[shiftIdx] && !merged.has(idx) && !merged.has(idx)) {
+                // merge tile values
+                tiles_list[shiftIdx] += tiles_list[idx]
+                tiles_list[idx] = 0; // old location set to zero
+                // track that the tile has been merged during this shift
+                merged.add(shiftIdx);
+                return true;
             }
         }
-        // TODO: Only spawn a new tile if any movement occurred. This function could return a true if any tiles moved, and then the main caller, maybe the keyListener, would call this if anything moved
-        // spawn a new tile now that the shift is done
-        this.fillNewTile(tiles_new); // TODO: does this get moved into the event listener?
-        this.setState({tiles: tiles_new});
-        console.log()
+        return false;
     }
+
+    /*
+    Methods for managing directional shift
+     */
+    upShift = (newTiles, merged) => {
+        let movementOccurred = false;
+        for (let i = 15; i >= 0; i--) {
+            // shift when possible, track if movement occurred, shift_idx is +/- 4
+            movementOccurred = this.shiftCheck(newTiles, merged, i, i - 4) || movementOccurred;
+        }
+
+        return movementOccurred;
+    }
+
+    downShift = (newTiles, merged) => {
+        let movementOccurred = false;
+        for (let i = 0; i <= 15; i++) {
+            console.count("Downshift i is " + i)
+            // shift when possible, track if movement occurred, shift_idx is +/- 4
+            movementOccurred = this.shiftCheck(newTiles, merged, i, i + 4) || movementOccurred;
+        }
+        console.count("Downshift movement occurred is " + movementOccurred)
+        return movementOccurred;
+    }
+
 
     // listen for arrow keys
     onKeyPress(e) {
@@ -132,15 +180,17 @@ class Board extends React.Component {
         }
         // up arrow
         else if (e.code === "ArrowUp") {
-            console.count("In ArrowUp")
-            this.shiftUp();
+            // move tiles up starting at the bottom of the board
+            this.shiftManager(this.upShift);
         }
         // right arrow
-        else if (e.code === 39) {
+        else if (e.code === "ArrowRight") {
 
         }
         // down arrow
-        else if (e.code === 40) {
+        else if (e.code === "ArrowDown") {
+            // move tiles down starting from the top of the board
+            this.shiftManager(this.downShift);
 
         }
     }
