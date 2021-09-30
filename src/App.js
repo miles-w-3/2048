@@ -17,11 +17,13 @@ class Board extends React.Component {
         super(props);
         // set color map for tiles
         this.colorMap = new Map([[0, "#595959"], [2, "#DCDCDC"], [4, "#FAFAD2"], [8, "#FFD700"],
-            [16, "#FFA500"], [32, "#FF6347"]])
+            [16, "#FFA500"], [32, "#FF6347"], [64, "#FF0000"], [128, "#ffe866"], [256, "#ffe033"],
+            [512, "#ffdd1a"], [1024, "#ffd700"], [2048, "#ffd700"]])
         this.state = {
             // keep track of tile values in each location
             tiles: Array(16).fill(0),
-
+            // keep track of score
+            score: 0
         }
     }
 
@@ -34,8 +36,6 @@ class Board extends React.Component {
         this.fillNewTile(newTiles);
         this.fillNewTile(newTiles);
         this.setState({tiles: newTiles});
-
-
     }
 
     // spawn a new tile on an empty space in the given tile array
@@ -60,23 +60,27 @@ class Board extends React.Component {
         tiles_array[boardIndex] = value;
     }
 
-
     // render the board on screen
     render() {
+        // draw row by row, allowing 1d array
         return (
-            // draw row by row, allowing 1d array
             <div>
-                <div className="board-row">
-                    {this.renderTile(0)}{this.renderTile(1)}{this.renderTile(2)}{this.renderTile(3)}
+                <div>
+                    <div className="board-row">
+                        {this.renderTile(0)}{this.renderTile(1)}{this.renderTile(2)}{this.renderTile(3)}
+                    </div>
+                    <div className="board-row">
+                        {this.renderTile(4)}{this.renderTile(5)}{this.renderTile(6)}{this.renderTile(7)}
+                    </div>
+                    <div className="board-row">
+                        {this.renderTile(8)}{this.renderTile(9)}{this.renderTile(10)}{this.renderTile(11)}
+                    </div>
+                    <div className="board-row">
+                        {this.renderTile(12)}{this.renderTile(13)}{this.renderTile(14)}{this.renderTile(15)}
+                    </div>
                 </div>
-                <div className="board-row">
-                    {this.renderTile(4)}{this.renderTile(5)}{this.renderTile(6)}{this.renderTile(7)}
-                </div>
-                <div className="board-row">
-                    {this.renderTile(8)}{this.renderTile(9)}{this.renderTile(10)}{this.renderTile(11)}
-                </div>
-                <div className="board-row">
-                    {this.renderTile(12)}{this.renderTile(13)}{this.renderTile(14)}{this.renderTile(15)}
+                <div>
+                    Score: {this.state.score}
                 </div>
             </div>
         );
@@ -134,13 +138,15 @@ class Board extends React.Component {
             // otherwise, if the value of the tiles is equal, make sure they haven't been merged during this shift
             else if (tiles_list[idx] === tiles_list[shiftIdx] && !merged.has(idx) && !merged.has(shiftIdx)) {
                 // merge tile values
-                tiles_list[shiftIdx] += tiles_list[idx]
+                tiles_list[shiftIdx] += tiles_list[idx];
                 tiles_list[idx] = 0; // old location set to zero
+                // add the tile you just made to the score
+                this.setState({score: this.state.score + tiles_list[shiftIdx]});
                 // track that the tile has been merged during this shift
                 merged.add(shiftIdx);
                 return true;
             }
-            // if there is a tile above and it is not able to merge, we need to see if it can move so that this tile
+                // if there is a tile above and it is not able to merge, we need to see if it can move so that this tile
             // doesn't get blocked
             else {
                 // calculate the shift interval
@@ -185,24 +191,66 @@ class Board extends React.Component {
     }
 
     leftShift = (newTiles, merged) => {
-        let transformTiles = [];
-        let movementOccurred = false;
-        // loop up until the first row, nothing will be pulled from above the first row
-        for (let j = 0; j < 4; j++) {
-            for (let i = 15; i >= 4; i--) {
-                movementOccurred = this.executeShift(newTiles, merged, i, i - 4) || movementOccurred;
-            }
-        }
+        this.rotateNeg90(newTiles) // use rotation to avoid wrapping
+
+        // since board was rotated, moving left is now like moving down
+        let movementOccurred = this.downShift(newTiles, merged)
+        // TODO: Want to create a rotate positive 90 functon to that I don't have to call 3 times
+        this.rotateNeg90(newTiles)
+        this.rotateNeg90(newTiles)
+        this.rotateNeg90(newTiles)
+
         return movementOccurred;
+    }
+
+    rightShift = (newTiles, merged) => {
+        this.rotateNeg90(newTiles) // use rotation to avoid wrapping
+
+        // since board was rotated, moving right is now like moving up
+        let movementOccurred = this.upShift(newTiles, merged)
+        this.rotateNeg90(newTiles)
+        this.rotateNeg90(newTiles)
+        this.rotateNeg90(newTiles)
+
+        return movementOccurred;
+    }
+
+    // TODO: Change to loops later, this could be moved to another page since it doesn't have to be a class method
+    // swap the axes of the tiles, effectively rotating the given board -90 degrees
+    rotateNeg90(currentTiles) {
+        // copy the old array, want to mutate current tiles for the rotation
+        let oldTiles = [...currentTiles];
+        // rotate the first row by negative 90 degrees
+        currentTiles[0] = oldTiles[3]
+        currentTiles[4] = oldTiles[2]
+        currentTiles[8] = oldTiles[1]
+        currentTiles[12] = oldTiles[0]
+
+        // rotate the second row
+        currentTiles[1] = oldTiles[7]
+        currentTiles[5] = oldTiles[6]
+        currentTiles[9] = oldTiles[5]
+        currentTiles[13] = oldTiles[4]
+
+        // rotate third row
+        currentTiles[2] = oldTiles[11]
+        currentTiles[6] = oldTiles[10]
+        currentTiles[10] = oldTiles[9]
+        currentTiles[14] = oldTiles[8]
+
+        // rotate fourth row
+        currentTiles[3] = oldTiles[15]
+        currentTiles[7] = oldTiles[14]
+        currentTiles[11] = oldTiles[13]
+        currentTiles[15] = oldTiles[12]
     }
 
 
     // listen for arrow keys
     onKeyPress(e) {
-        console.count("In keyPress function")
         // left arrow
         if (e.code === "ArrowLeft") {
-
+            this.shiftManager(this.leftShift)
         }
         // up arrow
         else if (e.code === "ArrowUp") {
@@ -211,7 +259,7 @@ class Board extends React.Component {
         }
         // right arrow
         else if (e.code === "ArrowRight") {
-
+            this.shiftManager(this.rightShift)
         }
         // down arrow
         else if (e.code === "ArrowDown") {
@@ -224,7 +272,7 @@ class Board extends React.Component {
 
 
 function Game() {
-
+    // TODO: Remove game board from here, catagorize it within Board's render instead
     return (
         <div className="game">
             <div className="game-board">

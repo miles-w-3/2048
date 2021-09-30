@@ -9,6 +9,7 @@
   width: 50px;
   background-color: #CFCBBB;
   border-width: 2px;
+  /*border-radius: 5px; for later once board looks better*/
   border-color: #282c34;
   line-height: 50px;
   text-align: center;
