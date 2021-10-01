@@ -1,63 +1,70 @@
 .App {
-  text-align: center;
+    text-align: center;
 }
 
 /* descriptions for a single tile */
 .square {
-    display: inline-block;
-  height: 50px;
-  width: 50px;
-  background-color: #CFCBBB;
-  border-width: 2px;
-  /*border-radius: 5px; for later once board looks better*/
-  border-color: #282c34;
-  line-height: 50px;
-  text-align: center;
+    display: table-cell;
+    height: 75px;
+    width: 75px;
+    font: 24px "Arial";
+    font-weight: bold;
+    background-color: #CFCBBB;
+    /*border-radius: 5px; for later once board looks better*/
+    border: 2px solid #525252;
+    line-height: 75px;
+    text-align: center;
+
 }
 
 /* descriptions for a row on the board*/
-.board-row::after {
-  height: 50px;
-  width: 200px;
-  display: table;
+.board-row {
+    display: table-row;
+    border: 0px solid #525252;
+    height: 80px;
+    width: 400px;
 }
 
-.game-board {
-  width: 200px;
-  height: 200px;
+.board-panel {
+
+}
+
+.current-score:horizontal {
+    width: 100px;
+    height: 50px;
 }
 
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
+    height: 40vmin;
+    pointer-events: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+    .App-logo {
+        animation: App-logo-spin infinite 20s linear;
+    }
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
 }
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }

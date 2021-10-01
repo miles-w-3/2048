@@ -3,20 +3,22 @@ import React from 'react';
 
 function Tile(props) {
     // return a square tile
+    // TODO: for some reason, a square with no text in it causes all of the other squares to shift, so make a square with text and same color
     return (
         <div className="square" style={{backgroundColor: props.color}}>
-            <span>{props.value === 0 ? "-" : props.value}</span>
+            {props.value === 0 ? "" : props.value}
         </div>
     )
 
 }
 
+// TODO: when three tiles of the same type are in a row, the wrong two are merged. Could be solved by recursively running executeShift to deal with the above case, then execue shift again to move this num
 class Board extends React.Component {
     // initialize tiles array within state
     constructor(props) {
         super(props);
         // set color map for tiles
-        this.colorMap = new Map([[0, "#595959"], [2, "#DCDCDC"], [4, "#FAFAD2"], [8, "#FFD700"],
+        this.colorMap = new Map([[0, "#a9a9a9"], [2, "#DCDCDC"], [4, "#FAFAD2"], [8, "#FFD700"],
             [16, "#FFA500"], [32, "#FF6347"], [64, "#FF0000"], [128, "#ffe866"], [256, "#ffe033"],
             [512, "#ffdd1a"], [1024, "#ffd700"], [2048, "#ffd700"]])
         this.state = {
@@ -64,8 +66,8 @@ class Board extends React.Component {
     render() {
         // draw row by row, allowing 1d array
         return (
-            <div>
-                <div>
+            <div className="board-panel">
+                <div className="board-grid">
                     <div className="board-row">
                         {this.renderTile(0)}{this.renderTile(1)}{this.renderTile(2)}{this.renderTile(3)}
                     </div>
@@ -79,11 +81,12 @@ class Board extends React.Component {
                         {this.renderTile(12)}{this.renderTile(13)}{this.renderTile(14)}{this.renderTile(15)}
                     </div>
                 </div>
-                <div>
+                <div className="current-score">
                     Score: {this.state.score}
                 </div>
             </div>
-        );
+        )
+            ;
     }
 
 
@@ -272,15 +275,10 @@ class Board extends React.Component {
 
 
 function Game() {
-    // TODO: Remove game board from here, catagorize it within Board's render instead
     return (
         <div className="game">
-            <div className="game-board">
+            <div className="main-board">
                 <Board/>
-            </div>
-            <div className="game-info">
-                <div>{/* status */}</div>
-                <ol>{/* TODO */}</ol>
             </div>
         </div>
     );
