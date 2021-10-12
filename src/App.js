@@ -3,13 +3,25 @@ import React from 'react';
 
 function Tile(props) {
     // return a square tile
-    // TODO: for some reason, a square with no text in it causes all of the other squares to shift, so make a square with text and same color
     return (
         <div className="square" style={{backgroundColor: props.color}}>
             {props.value === 0 ? "" : props.value}
         </div>
     )
+}
 
+function GameWon(props) {
+    return (
+        <div>
+            You win! Continue playing?
+            <button>
+                Continue
+            </button>
+            <button>
+                Restart
+            </button>
+        </div>
+    )
 }
 
 // TODO: when three tiles of the same type are in a row, the wrong two are merged. Could be solved by recursively running executeShift to deal with the above case, then execue shift again to move this num
@@ -140,9 +152,29 @@ class Board extends React.Component {
             }
             // otherwise, if the value of the tiles is equal, make sure they haven't been merged during this shift
             else if (tiles_list[idx] === tiles_list[shiftIdx] && !merged.has(idx) && !merged.has(shiftIdx)) {
-                // merge tile values
-                tiles_list[shiftIdx] += tiles_list[idx];
-                tiles_list[idx] = 0; // old location set to zero
+                // calculate the shift interval
+                let shift_interval = shiftIdx - idx;
+                // need to allow case where a different merge should occur first
+                let movementOccurred = this.executeShift(tiles_list, merged, shiftIdx, shiftIdx + shift_interval);
+                // if the above tile did not move, then we can assume this is the best merge
+                if (!movementOccurred) {
+                    // merge tile values
+                    tiles_list[shiftIdx] += tiles_list[idx];
+                    tiles_list[idx] = 0; // old location set to zero
+                }
+                // otherwise, if the above tile moved, just move this one
+                else {
+                    // move tile
+                    tiles_list[shiftIdx] = tiles_list[idx];
+                    tiles_list[idx] = 0;
+                    // if this tile has been merged previously, make sure to keep track at the new index
+                    if (merged.has(idx)) {
+                        merged.delete(idx);
+                        merged.add(shiftIdx);
+                    }
+                    return true;
+                }
+
                 // add the tile you just made to the score
                 this.setState({score: this.state.score + tiles_list[shiftIdx]});
                 // track that the tile has been merged during this shift
@@ -271,6 +303,7 @@ class Board extends React.Component {
 
         }
     }
+
 }
 
 
